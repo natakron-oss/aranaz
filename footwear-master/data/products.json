@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "name": "Women's Boots Shoes Maca",
+    "price": 139.00,
+    "price_display": "$139.00",
+    "image": "images/item-1.jpg",
+    "url": "product-detail.html?id=1",
+    "category": "women"
+  },
+  {
+    "id": 2,
+    "name": "Women's Minam Meaghan",
+    "price": 139.00,
+    "price_display": "$139.00",
+    "image": "images/item-2.jpg",
+    "url": "product-detail.html?id=2",
+    "category": "women"
+  },
+  {
+    "id": 3,
+    "name": "Men's Taja Commissioner",
+    "price": 139.00,
+    "price_display": "$139.00",
+    "image": "images/item-3.jpg",
+    "url": "product-detail.html?id=3",
+    "category": "men"
+  },
+  {
+    "id": 4,
+    "name": "Russ Men's Sneakers",
+    "price": 139.00,
+    "price_display": "$139.00",
+    "image": "images/item-4.jpg",
+    "url": "product-detail.html?id=4",
+    "category": "men"
+  },
+  {
+    "id": 5,
+    "name": "Women's Casual Slip Ons",
+    "price": 89.00,
+    "price_display": "$89.00",
+    "image": "images/item-5.jpg",
+    "url": "product-detail.html?id=5",
+    "category": "women"
+  },
+  {
+    "id": 6,
+    "name": "Comfort Running Shoe",
+    "price": 119.00,
+    "price_display": "$119.00",
+    "image": "images/item-6.jpg",
+    "url": "product-detail.html?id=6",
+    "category": "men"
+  },
+  {
+    "id": 7,
+    "name": "Classic Leather Oxford",
+    "price": 149.00,
+    "price_display": "$149.00",
+    "image": "images/item-7.jpg",
+    "url": "product-detail.html?id=7",
+    "category": "men"
+  },
+  {
+    "id": 8,
+    "name": "Summer Sandal",
+    "price": 59.00,
+    "price_display": "$59.00",
+    "image": "images/item-8.jpg",
+    "url": "product-detail.html?id=8",
+    "category": "women"
+  },
+  {
+    "id": 9,
+    "name": "Trail Hiking Boot",
+    "price": 129.00,
+    "price_display": "$129.00",
+    "image": "images/item-1.jpg",
+    "url": "product-detail.html?id=9",
+    "category": "men"
+  },
+  {
+    "id": 10,
+    "name": "Everyday Slip-On",
+    "price": 74.00,
+    "price_display": "$74.00",
+    "image": "images/item-2.jpg",
+    "url": "product-detail.html?id=10",
+    "category": "women"
+  },
+  {
+    "id": 11,
+    "name": "Sporty Trainer",
+    "price": 99.00,
+    "price_display": "$99.00",
+    "image": "images/item-3.jpg",
+    "url": "product-detail.html?id=11",
+    "category": "men"
+  },
+  {
+    "id": 12,
+    "name": "Leather Ankle Boot",
+    "price": 159.00,
+    "price_display": "$159.00",
+    "image": "images/item-4.jpg",
+    "url": "product-detail.html?id=12",
+    "category": "women"
+  },
+  {
+    "id": 13,
+    "name": "Canvas Low-Top",
+    "price": 49.00,
+    "price_display": "$49.00",
+    "image": "images/item-5.jpg",
+    "url": "product-detail.html?id=13",
+    "category": "men"
+  },
+  {
+    "id": 14,
+    "name": "Fashion Mule",
+    "price": 69.00,
+    "price_display": "$69.00",
+    "image": "images/item-6.jpg",
+    "url": "product-detail.html?id=14",
+    "category": "women"
+  },
+  {
+    "id": 15,
+    "name": "Platform Heel",
+    "price": 129.00,
+    "price_display": "$129.00",
+    "image": "images/item-7.jpg",
+    "url": "product-detail.html?id=15",
+    "category": "women"
+  },
+  {
+    "id": 16,
+    "name": "Minimalist Runner",
+    "price": 109.00,
+    "price_display": "$109.00",
+    "image": "images/item-8.jpg",
+    "url": "product-detail.html?id=16",
+    "category": "men"
+  },
+  {
+    "id": 17,
+    "name": "Office Derby",
+    "price": 139.00,
+    "price_display": "$139.00",
+    "image": "images/item-1.jpg",
+    "url": "product-detail.html?id=17",
+    "category": "men"
+  },
+  {
+    "id": 18,
+    "name": "Wide-Fit Comfort",
+    "price": 95.00,
+    "price_display": "$95.00",
+    "image": "images/item-2.jpg",
+    "url": "product-detail.html?id=18",
+    "category": "women"
+  },
+  {
+    "id": 19,
+    "name": "Slip-Resist Work Shoe",
+    "price": 129.00,
+    "price_display": "$129.00",
+    "image": "images/item-3.jpg",
+    "url": "product-detail.html?id=19",
+    "category": "men"
+  },
+  {
+    "id": 20,
+    "name": "Casual Chelsea Boot",
+    "price": 119.00,
+    "price_display": "$119.00",
+    "image": "images/item-4.jpg",
+    "url": "product-detail.html?id=20",
+    "category": "women"
+  }
+]
