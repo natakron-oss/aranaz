@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Search Products - Footwear</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div id="page">
+      <nav class="colorlib-nav" role="navigation">
+        <div class="top-menu">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-7 col-md-9">
+                <div id="colorlib-logo"><a href="index.html">Footwear</a></div>
+              </div>
+              <div class="col-sm-5 col-md-3">
+                <form action="search.html" method="get" class="search-wrap">
+                  <div class="form-group">
+                    <input type="search" name="q" id="search-input" class="form-control search" placeholder="Search products">
+                    <button class="btn btn-primary submit-search text-center" type="submit"><i class="icon-search"></i></button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container mt-5">
+        <div class="row">
+          <div class="col-12">
+            <h2 id="results-title">Search Results</h2>
+            <p id="results-count" class="text-muted"></p>
+            <div id="product-container"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/load-products.js"></script>
+    <script>
+      (function () {
+        function getQueryParam(name) {
+          var url = new URL(window.location.href);
+          return url.searchParams.get(name) || '';
+        }
+
+        var q = getQueryParam('q');
+        var input = document.getElementById('search-input');
+        if (input) input.value = q;
+
+        // Load products, then filter and render
+        requestProducts('data/products.json', '#product-container').then(function (items) {
+          var results = window.filterProducts ? window.filterProducts(items, q) : items;
+          var countEl = document.getElementById('results-count');
+          if (countEl) countEl.textContent = results.length + ' result' + (results.length === 1 ? '' : 's');
+          renderUI(results, '#product-container');
+
+          // Setup live filtering on this page
+          if (window.setupClientSearch) {
+            window.setupClientSearch('#search-input', '#product-container', { debounceMs: 200 });
+            // Update count on input
+            var inp = document.getElementById('search-input');
+            if (inp) {
+              inp.addEventListener('input', function () {
+                var r = window.filterProducts ? window.filterProducts(allProducts, inp.value) : [];
+                if (countEl) countEl.textContent = r.length + ' result' + (r.length === 1 ? '' : 's');
+              });
+            }
+          }
+        }).catch(function () {
+          var countEl = document.getElementById('results-count');
+          if (countEl) countEl.textContent = 'Failed to load products.';
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -58,6 +58,33 @@
     container.appendChild(row);
   }
 
+  // In-memory cache of last-loaded products for client-side filtering
+  var allProducts = [];
+
+  function normalizeText(str) {
+    return (str || '').toString().toLowerCase();
+  }
+
+  // Simple filter: matches query tokens against name and category
+  function filterProducts(products, query) {
+    if (!query) return products.slice();
+    var q = normalizeText(query).split(/\s+/).filter(Boolean);
+    if (q.length === 0) return products.slice();
+    return products.filter(function (p) {
+      var hay = normalizeText([p.name, p.category, p.price_display].join(' '));
+      return q.every(function (token) { return hay.indexOf(token) !== -1; });
+    });
+  }
+
+  function debounce(fn, wait) {
+    var t;
+    return function () {
+      var args = arguments;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(null, args); }, wait);
+    };
+  }
+
   /**
    * fetchJson
    * - Thin wrapper around the native fetch to clarify the sequence diagram.
@@ -130,7 +157,16 @@
     // Call fetchJson with retry options; callers may override by passing options.
     return fetchJson(path, options).then(function (data) {
       var items = Array.isArray(data) ? data : (data.products || []);
+      // cache for client-side search/filter
+      allProducts = items.slice();
       renderUI(items, containerSelector);
+      // if controls exist, populate dynamic filter options
+      try {
+        var controls = document.getElementById('product-controls');
+        if (controls && typeof controls.populateFilterCategories === 'function') {
+          controls.populateFilterCategories(allProducts);
+        }
+      } catch (e) {}
       return items;
     }).catch(function (err) {
       // Provide HTTP-status-specific feedback in the UI where possible
@@ -176,9 +212,17 @@
     }
 
     controls.innerHTML = '' +
-      '<label style="margin-right:8px">Retries: <input id="product-retries" type="number" min="0" value="2" style="width:64px"></label>' +
-      '<label style="margin-right:8px">Delay (ms): <input id="product-retryDelay" type="number" min="0" value="600" style="width:80px"></label>' +
-      '<button id="product-reload">Reload Products</button>';
+      '<div style="margin-bottom:8px">' +
+        '<label style="margin-right:8px">Retries: <input id="product-retries" type="number" min="0" value="2" style="width:64px"></label>' +
+        '<label style="margin-right:8px">Delay (ms): <input id="product-retryDelay" type="number" min="0" value="600" style="width:80px"></label>' +
+        '<button id="product-reload">Reload Products</button>' +
+      '</div>' +
+      '<div id="product-filters" style="margin-bottom:8px">' +
+        '<strong>Filters:</strong> ' +
+        '<span id="filter-categories"></span> ' +
+        '<label style="margin-left:8px">Price: <input id="filter-min-price" type="number" min="0" placeholder="Min" style="width:80px"> - <input id="filter-max-price" type="number" min="0" placeholder="Max" style="width:80px"></label>' +
+        '<label style="margin-left:8px">Sort: <select id="filter-sort"><option value="">Default</option><option value="price_asc">Price ↑</option><option value="price_desc">Price ↓</option><option value="name_asc">Name A→Z</option><option value="name_desc">Name Z→A</option></select></label>' +
+      '</div>';
 
     var btn = document.getElementById('product-reload');
     var inputRetries = document.getElementById('product-retries');
@@ -192,12 +236,103 @@
       // Call requestProducts with options read from the UI
       requestProducts(path, containerSelector, { retries: retries, retryDelay: retryDelay }).catch(function () {});
     });
+
+    // wire filter inputs (they'll work once products are loaded)
+    var catsHolder = document.getElementById('filter-categories');
+    var minPrice = document.getElementById('filter-min-price');
+    var maxPrice = document.getElementById('filter-max-price');
+    var sortSel = document.getElementById('filter-sort');
+
+    function applyFilters() {
+      // If products not loaded yet, load then apply
+      var items = allProducts && allProducts.length ? allProducts.slice() : [];
+      if (!items.length) {
+        requestProducts(path, containerSelector).then(function (it) { items = it || []; doApply(items); }).catch(function () { doApply([]); });
+      } else {
+        doApply(items);
+      }
+    }
+
+    function doApply(items) {
+      // categories
+      var checked = [];
+      if (catsHolder) {
+        var inputs = catsHolder.querySelectorAll('input[type="checkbox"]');
+        inputs.forEach(function (cb) { if (cb.checked) checked.push(cb.value); });
+      }
+
+      var filtered = items.filter(function (p) {
+        if (checked.length && checked.indexOf(p.category) === -1) return false;
+        var min = parseFloat(minPrice && minPrice.value) || 0;
+        var max = parseFloat(maxPrice && maxPrice.value) || Number.POSITIVE_INFINITY;
+        var price = Number(p.price) || 0;
+        if (price < min) return false;
+        if (price > max) return false;
+        return true;
+      });
+
+      // sort
+      var sort = sortSel && sortSel.value;
+      if (sort === 'price_asc') filtered.sort(function (a,b){return (Number(a.price)||0)-(Number(b.price)||0);});
+      else if (sort === 'price_desc') filtered.sort(function (a,b){return (Number(b.price)||0)-(Number(a.price)||0);});
+      else if (sort === 'name_asc') filtered.sort(function (a,b){return (a.name||'').localeCompare(b.name||'');});
+      else if (sort === 'name_desc') filtered.sort(function (a,b){return (b.name||'').localeCompare(a.name||'');});
+
+      renderUI(filtered, containerSelector);
+    }
+
+    var debouncedApply = debounce(applyFilters, 200);
+    if (minPrice) minPrice.addEventListener('input', debouncedApply);
+    if (maxPrice) maxPrice.addEventListener('input', debouncedApply);
+    if (sortSel) sortSel.addEventListener('change', applyFilters);
+
+    // expose a helper to populate categories once products are loaded
+    controls.populateFilterCategories = function (items) {
+      if (!catsHolder) return;
+      var cats = {};
+      (items||[]).forEach(function (p) { if (p && p.category) cats[p.category]=true; });
+      var html = '';
+      Object.keys(cats).sort().forEach(function (c) {
+        html += '<label style="margin-right:6px"><input type="checkbox" value="' + c + '"> ' + c + '</label>';
+      });
+      catsHolder.innerHTML = html;
+      // wire checkbox change
+      var boxes = catsHolder.querySelectorAll('input[type="checkbox"]');
+      boxes.forEach(function (b) { b.addEventListener('change', debouncedApply); });
+    };
   }
 
   // Expose the functions for use elsewhere and for testing in the console
   window.requestProducts = requestProducts;
   window.renderUI = renderUI;
   window.setupProductControls = renderControls;
+  // Expose client-side search helpers
+  window.filterProducts = filterProducts;
+
+  // Setup a client-side search box that filters the currently-loaded products.
+  // If products are not yet loaded, it will trigger a load and then attach.
+  window.setupClientSearch = function (inputSelector, containerSelector, options) {
+    options = options || {};
+    var wait = typeof options.debounceMs === 'number' ? options.debounceMs : 250;
+    var input = document.querySelector(inputSelector);
+    var container = containerSelector || '#product-container';
+    if (!input) return;
+
+    function ensureProducts(callback) {
+      if (allProducts && allProducts.length) return callback(allProducts.slice());
+      requestProducts('data/products.json', container).then(function (items) { callback(items); }).catch(function () { callback([]); });
+    }
+
+    var onInput = debounce(function () {
+      var q = input.value || '';
+      ensureProducts(function (items) {
+        var results = filterProducts(items, q);
+        renderUI(results, container);
+      });
+    }, wait);
+
+    input.addEventListener('input', onInput);
+  };
 
   // Convenience: auto-run on DOMContentLoaded — insert controls and load products
   document.addEventListener('DOMContentLoaded', function () {
