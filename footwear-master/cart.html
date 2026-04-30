@@ -63,7 +63,11 @@
 								<li><a href="index.html">Home</a></li>
 								<li><a href="about.html">About</a></li>
 								<li><a href="contact.html">Contact</a></li>
-								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
+								<li class="cart">
+									<a href="cart.html">
+										<i class="icon-shopping-cart"></i> Cart [<span id="cart-count">0</span>]
+									</a>
+								</li>
 							</ul>
 						</div>
 					</div>
@@ -126,111 +130,8 @@
 				</div>
 				<div class="row row-pb-lg">
 					<div class="col-md-12">
-						<div class="product-name d-flex">
-							<div class="one-forth text-left px-4">
-								<span>Product Details</span>
-							</div>
-							<div class="one-eight text-center">
-								<span>Price</span>
-							</div>
-							<div class="one-eight text-center">
-								<span>Quantity</span>
-							</div>
-							<div class="one-eight text-center">
-								<span>Total</span>
-							</div>
-							<div class="one-eight text-center px-4">
-								<span>Remove</span>
-							</div>
-						</div>
-						<div class="product-cart d-flex">
-							<div class="one-forth">
-								<div class="product-img" style="background-image: url(images/item-6.jpg);">
-								</div>
-								<div class="display-tc">
-									<h3>Product Name</h3>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$68.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<input type="text" id="quantity" name="quantity" class="form-control input-number text-center" value="1" min="1" max="100">
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$120.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<a href="#" class="closed"></a>
-								</div>
-							</div>
-						</div>
-						<div class="product-cart d-flex">
-							<div class="one-forth">
-								<div class="product-img" style="background-image: url(images/item-7.jpg);">
-								</div>
-								<div class="display-tc">
-									<h3>Product Name</h3>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$68.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<form action="#">
-										<input type="text" name="quantity" class="form-control input-number text-center" value="1" min="1" max="100">
-									</form>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$120.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<a href="#" class="closed"></a>
-								</div>
-							</div>
-						</div>
-						<div class="product-cart d-flex">
-							<div class="one-forth">
-								<div class="product-img" style="background-image: url(images/item-8.jpg);">
-								</div>
-								<div class="display-tc">
-									<h3>Product Name</h3>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$68.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<input type="text" id="quantity" name="quantity" class="form-control input-number text-center" value="1" min="1" max="100">
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<span class="price">$120.00</span>
-								</div>
-							</div>
-							<div class="one-eight text-center">
-								<div class="display-tc">
-									<a href="#" class="closed"></a>
-								</div>
-							</div>
+						<div class="text-center py-5">
+							<div id="cart-items"></div>
 						</div>
 					</div>
 				</div>
@@ -425,7 +326,83 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/jquery.stellar.min.js"></script>
 	<!-- Main -->
 	<script src="js/main.js"></script>
+	<script>
+		function updateCartCount() {
+		var cart = JSON.parse(localStorage.getItem('cart')) || [];
+		var total = cart.reduce(function(sum, item) {
+			return sum + item.qty;
+		}, 0);
 
-	</body>
+		var el = document.getElementById('cart-count');
+		if (el) el.innerText = total;
+		}
+
+		document.addEventListener('DOMContentLoaded', updateCartCount);
+		</script>
+	<script src="js/main.js"></script>
+
+<script>
+function renderCart() {
+  var cart = JSON.parse(localStorage.getItem('cart')) || [];
+  var container = document.getElementById('cart-items');
+
+  if (!container) return;
+
+  if (cart.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-5">
+        <h3>Your cart is empty</h3>
+      </div>
+    `;
+    return;
+  }
+
+  var html = '<table class="table">';
+  html += `
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Total</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
+
+  var totalAll = 0;
+
+  cart.forEach(function(item, index) {
+    var total = item.price * item.qty;
+    totalAll += total;
+
+    html += `
+      <tr>
+        <td><img src="${item.image}" width="50"> ${item.name}</td>
+        <td>$${item.price}</td>
+        <td>${item.qty}</td>
+        <td>$${total}</td>
+        <td><button onclick="removeItem(${index})">X</button></td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table>';
+  html += `<h3>Total: $${totalAll}</h3>`;
+
+  container.innerHTML = html;
+}
+
+function removeItem(index) {
+  var cart = JSON.parse(localStorage.getItem('cart')) || [];
+  cart.splice(index, 1);
+  localStorage.setItem('cart', JSON.stringify(cart));
+  renderCart();
+}
+
+document.addEventListener('DOMContentLoaded', renderCart);
+</script>
+</body>
 </html>
 

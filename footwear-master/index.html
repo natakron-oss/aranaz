@@ -63,7 +63,7 @@
 								<li class="active"><a href="index.html">Home</a></li>
 								<li><a href="about.html">About</a></li>
 								<li><a href="contact.html">Contact</a></li>
-								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
+								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [<span id="cart-count">0</span>]</a></li>
 
 							</ul>
 						</div>
@@ -337,7 +337,22 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<!-- Main -->
 	<script src="js/load-products.js"></script>
 	<script src="js/main.js"></script>
+<script src="js/main.js"></script>
 
-	</body>
+<script>
+function updateCartCount() {
+  var cart = JSON.parse(localStorage.getItem('cart')) || [];
+  var total = cart.reduce(function(sum, item) {
+    return sum + item.qty;
+  }, 0);
+
+  var el = document.getElementById('cart-count');
+  if (el) el.innerText = total;
+}
+
+document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
+
+</body>
 </html>
 

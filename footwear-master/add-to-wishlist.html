@@ -64,7 +64,7 @@
 
 								<li><a href="about.html">About</a></li>
 								<li><a href="contact.html">Contact</a></li>
-								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [0]</a></li>
+								<li class="cart"><a href="cart.html"><i class="icon-shopping-cart"></i> Cart [<span id="cart-count">0</span>]</a></li>
 							</ul>
 						</div>
 					</div>
@@ -393,6 +393,21 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/jquery.stellar.min.js"></script>
 	<!-- Main -->
 	<script src="js/main.js"></script>
+	<script src="js/main.js"></script>
+
+<script>
+function updateCartCount() {
+  var cart = JSON.parse(localStorage.getItem('cart')) || [];
+  var total = cart.reduce(function(sum, item) {
+    return sum + item.qty;
+  }, 0);
+
+  var el = document.getElementById('cart-count');
+  if (el) el.innerText = total;
+}
+
+document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
 
 	</body>
 </html>

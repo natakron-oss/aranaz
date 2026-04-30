@@ -42,6 +42,11 @@
     products.forEach(function (p) {
       var col = document.createElement('div');
       col.className = 'col-lg-3 mb-4 text-center';
+      
+      // คำนวณราคาเพื่อใช้ใน data-price
+      var priceValue = Number(p.price) || 0;
+      var priceDisplay = p.price_display || ('$' + priceValue.toFixed(2));
+
       col.innerHTML =
         '<div class="product-entry border">' +
           '<a href="' + (p.url || '#') + '" class="prod-img">' +
@@ -49,12 +54,20 @@
           '</a>' +
           '<div class="desc">' +
             '<h2><a href="' + (p.url || '#') + '">' + escapeHtml(p.name) + '</a></h2>' +
-            '<span class="price">' + (p.price_display || ('$' + (Number(p.price) || 0).toFixed(2))) + '</span>' +
+            '<span class="price">' + priceDisplay + '</span>' +
+            // เพิ่มส่วนของปุ่ม Add to Cart ด้านล่างนี้
+            '<div class="add-to-cart-wrapper mt-2">' +
+              '<button class="btn btn-primary add-to-cart" ' +
+                'data-id="' + (p.id || '') + '" ' +
+                'data-price="' + priceValue + '">' +
+                '<i class="icon-shopping-cart"></i> Add to Cart' +
+              '</button>' +
+            '</div>' +
           '</div>' +
         '</div>';
       row.appendChild(col);
     });
-
+    
     container.appendChild(row);
   }
 
@@ -339,4 +352,34 @@
     try { renderControls('#product-container', 'data/products.json'); } catch (e) {}
     requestProducts().catch(function () {});
   });
+  document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.add-to-cart');
+  if (!btn) return;
+
+  var id = btn.dataset.id;
+  var price = Number(btn.dataset.price);
+  var name = btn.closest('.desc').querySelector('h2').innerText;
+  var image = btn.closest('.product-entry').querySelector('img').src;
+
+  var cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  var existing = cart.find(function(item) {
+    return item.id === id;
+  });
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      id: id,
+      name: name,
+      price: price,
+      image: image,
+      qty: 1
+    });
+  }
+
+  localStorage.setItem('cart', JSON.stringify(cart));
+  alert('Added to cart!');
+});
 })();
