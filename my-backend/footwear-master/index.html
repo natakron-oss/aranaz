@@ -37,6 +37,14 @@
 
 	</head>
 	<body>
+		<script>
+const token = localStorage.getItem('token');
+
+if (!token) {
+  alert("Please login first!");
+  window.location.href = "login.html";
+}
+</script>
 		
 	<div class="colorlib-loader"></div>
 
@@ -68,6 +76,9 @@
 										<i class="icon-shopping-cart"></i> Cart
 									</a>
 								</li>
+								<li id="logout-menu" style="display:none;">
+  <a href="#" onclick="logout()">Logout</a>
+</li>
 							</ul>
 						</div>
 					</div>
@@ -346,6 +357,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<!-- Main -->
 	<script src="js/load-products.js"></script>
 	<script src="js/main.js"></script>
+<script>
+function logout() {
+  localStorage.removeItem('token');
+  window.location.href = "login.html";
+}
+</script>
+
 
 </body>
 </html>

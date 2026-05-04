@@ -97,7 +97,6 @@
       t = setTimeout(function () { fn.apply(null, args); }, wait);
     };
   }
-
   /**
    * fetchJson
    * - Thin wrapper around the native fetch to clarify the sequence diagram.
@@ -119,35 +118,50 @@
    *   { retries: number, retryDelay: ms }
    */
   function fetchJson(path, options) {
-    options = options || {};
-    var retries = typeof options.retries === 'number' ? options.retries : 2;
-    var retryDelay = typeof options.retryDelay === 'number' ? options.retryDelay : 500;
-    var retryStatuses = [502, 503, 504]; // transient server errors worth retrying
+  options = options || {};
+  var retries = typeof options.retries === 'number' ? options.retries : 2;
+  var retryDelay = typeof options.retryDelay === 'number' ? options.retryDelay : 500;
+  var retryStatuses = [502, 503, 504];
 
-    function attempt(remaining) {
-      return fetch(path).then(function (res) {
-        if (!res.ok) {
-          var err = new Error('HTTP error: ' + res.status);
-          err.status = res.status;
-          // Retry for transient statuses if we have attempts left
-          if (retryStatuses.indexOf(res.status) !== -1 && remaining > 0) {
-            return delay(retryDelay).then(function () { return attempt(remaining - 1); });
-          }
-          throw err;
-        }
-        return res.json();
-      }).catch(function (err) {
-        // Network error (TypeError) or other issues — retry if attempts remain
-        var isNetworkError = err instanceof TypeError || err.name === 'TypeError';
-        if (isNetworkError && remaining > 0) {
-          return delay(retryDelay).then(function () { return attempt(remaining - 1); });
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    alert("Please login first");
+    window.location.href = "login.html";
+    return Promise.reject("No token");
+  }
+
+  function attempt(remaining) {
+    return fetch(path, {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    }).then(function (res) {
+
+      if (res.status === 401) {
+        alert("Session expired. Please login again.");
+        window.location.href = "login.html";
+        throw new Error("Unauthorized"); // 🔥 สำคัญ
+      }
+
+      if (!res.ok) {
+        var err = new Error('HTTP error: ' + res.status);
+        err.status = res.status;
+
+        if (retryStatuses.includes(res.status) && remaining > 0) {
+          return delay(retryDelay).then(function () {
+            return attempt(remaining - 1);
+          });
         }
         throw err;
-      });
-    }
+      }
 
-    return attempt(retries);
+      return res.json();
+    });
   }
+
+  return attempt(retries);
+}
 
   /**
    * requestProducts
