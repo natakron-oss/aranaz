@@ -172,7 +172,7 @@
 						<div class="featured">
 							<a href="#" class="featured-img" style="background-image: url(images/men.jpg);"></a>
 							<div class="desc">
-								<h2><a href="#">Shop Men's Collection</a></h2>
+								<h2><a href="#" onclick="loadCategory('men')">Shop Men's Collection</a></h2>
 							</div>
 						</div>
 					</div>
@@ -180,7 +180,7 @@
 						<div class="featured">
 							<a href="#" class="featured-img" style="background-image: url(images/women.jpg);"></a>
 							<div class="desc">
-								<h2><a href="#">Shop Women's Collection</a></h2>
+								<h2><a href="#" onclick="loadCategory('women')">Shop Women's Collection</a></h2>
 							</div>
 						</div>
 					</div>
@@ -192,7 +192,13 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-sm-8 offset-sm-2 text-center colorlib-heading">
-						<h2>Best Sellers</h2>
+					<h2>Best Sellers</h2>
+					</div>
+
+					<!-- 🔥 เพิ่มตรงนี้ -->
+					<div style="text-align:center; margin-bottom:20px;">
+					<button onclick="loadCategory('men')" class="btn btn-primary">Men</button>
+					<button onclick="loadCategory('women')" class="btn btn-secondary">Women</button>
 					</div>
 				</div>
 				<div class="row row-pb-md">
@@ -340,9 +346,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<!-- Main -->
 	<script src="js/load-products.js"></script>
 	<script src="js/main.js"></script>
-<script src="js/main.js"></script>
-
-<script src="js/main.js"></script>
 
 </body>
 </html>

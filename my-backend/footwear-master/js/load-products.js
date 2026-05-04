@@ -161,7 +161,7 @@
    *  4) requestProducts calls renderUI(parsedArray, selector) to update DOM
    */
   function requestProducts(path, containerSelector) {
-    path = path || 'data/products.json';
+    path = path || '/api/products?category=men';
     containerSelector = containerSelector || '#product-container';
 
     // Accept optional options param by reading arguments[2]
@@ -169,7 +169,18 @@
 
     // Call fetchJson with retry options; callers may override by passing options.
     return fetchJson(path, options).then(function (data) {
-      var items = Array.isArray(data) ? data : (data.products || []);
+      // รองรับ API backend + JSON เดิม
+        var items = [];
+
+        if (data && data.data) {
+          // มาจาก backend API
+          items = data.data;
+        } else if (Array.isArray(data)) {
+          // JSON แบบเดิม
+          items = data;
+        } else if (data.products) {
+          items = data.products;
+        }
       // cache for client-side search/filter
       allProducts = items.slice();
       renderUI(items, containerSelector);
@@ -349,8 +360,8 @@
 
   // Convenience: auto-run on DOMContentLoaded — insert controls and load products
   document.addEventListener('DOMContentLoaded', function () {
-    try { renderControls('#product-container', 'data/products.json'); } catch (e) {}
-    requestProducts().catch(function () {});
+    try { renderControls('#product-container', '/api/products?category=men'); } catch (e) {}
+    requestProducts('/api/products?category=men').catch(function () {});
   });
   document.addEventListener('click', function(e) {
   var btn = e.target.closest('.add-to-cart');
@@ -382,4 +393,7 @@
   localStorage.setItem('cart', JSON.stringify(cart));
   alert('Added to cart!');
 });
+window.loadCategory = function(category) {
+  requestProducts(`/api/products?category=${category}`, '#product-container');
+};
 })();
