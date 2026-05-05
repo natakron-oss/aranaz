@@ -71,14 +71,14 @@ if (!token) {
 								<li class="active"><a href="index.html">Home</a></li>
 								<li><a href="about.html">About</a></li>
 								<li><a href="contact.html">Contact</a></li>
+								<li id="logout-menu" style="display:none;">
+  <a href="#" onclick="logout()">Logout</a>
+</li>
 								<li class="cart">
 									<a href="cart.html">
 										<i class="icon-shopping-cart"></i> Cart
 									</a>
 								</li>
-								<li id="logout-menu" style="display:none;">
-  <a href="#" onclick="logout()">Logout</a>
-</li>
 							</ul>
 						</div>
 					</div>
@@ -359,8 +359,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/main.js"></script>
 <script>
 function logout() {
+  // ❌ ลบ token
   localStorage.removeItem('token');
-  window.location.href = "login.html";
+
+  // ❌ กัน back button (สำคัญ)
+  window.location.replace("login.html");
 }
 </script>
 

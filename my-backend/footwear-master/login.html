@@ -66,21 +66,36 @@
 </head>
 <body>
 
-<div class="login-box">
-  <h2>Login</h2>
-
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-
+<!-- LOGIN FORM -->
+<div id="loginForm">
+  <input type="email" id="loginEmail" placeholder="Email">
+  <input type="password" id="loginPassword" placeholder="Password">
   <button onclick="login()">Login</button>
+</div>
 
-  <p id="result"></p>
+<!-- REGISTER FORM -->
+<div id="registerForm" style="display:none;">
+  <input type="email" id="registerEmail" placeholder="Email">
+  <input type="password" id="registerPassword" placeholder="Password">
+  <input type="password" id="confirmPassword" placeholder="Confirm Password">
+  <button onclick="register()">Register</button>
 </div>
 
 <script>
+function showLogin() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerForm').style.display = 'none';
+}
+
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+}
+
+// LOGIN (แก้ id ให้ตรง)
 function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
 
   fetch('/api/login', {
     method: 'POST',
@@ -95,14 +110,44 @@ function login() {
       localStorage.setItem('token', data.token);
       document.getElementById('result').style.color = "green";
       document.getElementById('result').innerText = "Login success!";
-
       setTimeout(() => {
         window.location.href = "index.html";
       }, 1000);
-
     } else {
-      document.getElementById('result').style.color = "red";
       document.getElementById('result').innerText = "Login failed";
+    }
+  })
+  .catch(() => {
+    document.getElementById('result').innerText = "Server error";
+  });
+}
+
+// REGISTER
+function register() {
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+
+  if (password !== confirm) {
+    document.getElementById('result').innerText = "Passwords do not match";
+    return;
+  }
+
+  fetch('/api/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message === "User created") {
+      document.getElementById('result').style.color = "green";
+      document.getElementById('result').innerText = "Register success! Please login.";
+      showLogin();
+    } else {
+      document.getElementById('result').innerText = data.message || "Register failed";
     }
   })
   .catch(() => {

@@ -27,26 +27,43 @@ async function login(req, res) {
 }
 
 async function register(req, res) {
-  try {
-    const { email, password, firstName } = req.body;
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
 
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
-
-    const users = getUsers();
-    if (users.find(u => u.email === email)) return res.status(409).json({ message: 'User exists' });
-
-    const hashed = await bcrypt.hash(password, 10);
-    const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
-    const user = { id, email, password: hashed, firstName: firstName || '', registeredAt: new Date().toISOString().slice(0,10) };
-
-    addUser(user);
-
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-
-    res.status(201).json({ token });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+  if (password !== confirm) {
+    document.getElementById('result').innerText = "Passwords do not match";
+    return;
   }
+
+  fetch('/api/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.token) {
+      // ✅ register เสร็จ → login อัตโนมัติ
+      localStorage.setItem('token', data.token);
+
+      document.getElementById('result').style.color = "green";
+      document.getElementById('result').innerText = "Register success!";
+
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1000);
+
+    } else {
+      document.getElementById('result').innerText = data.message || "Register failed";
+    }
+  })
+  .catch(() => {
+    document.getElementById('result').innerText = "Server error";
+  });
 }
+
 
 module.exports = { login, register };
