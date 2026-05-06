@@ -135,38 +135,6 @@
 						</div>
 					</div>
 				</div>
-				<div class="row row-pb-lg">
-					<div class="col-md-12">
-						<div class="total-wrap">
-							<div class="row">
-								<div class="col-sm-8">
-									<form action="#">
-										<div class="row form-group">
-											<div class="col-sm-9">
-												<input type="text" name="quantity" class="form-control input-number" placeholder="Your Coupon Number...">
-											</div>
-											<div class="col-sm-3">
-												<input type="submit" value="Apply Coupon" class="btn btn-primary">
-											</div>
-										</div>
-									</form>
-								</div>
-								<div class="col-sm-4 text-center">
-									<div class="total">
-										<div class="sub">
-											<p><span>Subtotal:</span> <span>$200.00</span></p>
-											<p><span>Delivery:</span> <span>$0.00</span></p>
-											<p><span>Discount:</span> <span>$45.00</span></p>
-										</div>
-										<div class="grand-total">
-											<p><span><strong>Total:</strong></span> <span>$450.00</span></p>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
 
 				<div class="row">
 					<div class="col-sm-8 offset-sm-2 text-center colorlib-heading colorlib-heading-sm">
@@ -374,21 +342,79 @@ function renderCart() {
   });
 
   html += '</tbody></table>';
-  html += `<h3>Total: $${totalAll}</h3>`;
+
+  // ✅ total + checkout button
+  html += `
+    <h3>Total: $${totalAll}</h3>
+    <button class="btn btn-success" onclick="checkout()">
+      Checkout
+    </button>
+  `;
 
   container.innerHTML = html;
 }
+</script>
+<script>
+	function checkout() {
+  const token = localStorage.getItem('token');
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
+  if (!token) {
+    alert("Please login first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
+  fetch('/api/checkout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify({
+      items: cart,
+      email: "test@example.com",
+      creditCard: "1234567812345678"
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("Order success!");
+
+      // ✅ ล้าง cart
+      localStorage.removeItem('cart');
+
+      // ✅ ไปหน้า index
+      window.location.href = "index.html";
+    } else {
+      alert(data.message || "Checkout failed");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Server error");
+  });
+}
+</script>
+<script>
+// ✅ เรียกตอนโหลดหน้า
+document.addEventListener('DOMContentLoaded', function() {
+  renderCart();
+});
+
+// ✅ ฟังก์ชันลบสินค้า
 function removeItem(index) {
   var cart = JSON.parse(localStorage.getItem('cart')) || [];
   cart.splice(index, 1);
   localStorage.setItem('cart', JSON.stringify(cart));
   renderCart();
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  renderCart();
-});
 </script>
 </body>
 </html>

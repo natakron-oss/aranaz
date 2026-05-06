@@ -37,25 +37,32 @@
 
 	</head>
 	<body>
-<script>
-const token = localStorage.getItem('token');
-
-if (!token) {
-  alert("Please login first!");
-  window.location.href = "login.html";
-} else {
-  document.getElementById('logout-menu').style.display = 'block';
-}
-</script>
-<script>
+		<script>
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem('token');
 
   if (!token) {
     window.location.href = "login.html";
   } else {
-    document.getElementById('logout-menu').style.display = 'block';
+    const logoutMenu = document.getElementById('logout-menu');
+    if (logoutMenu) {
+      logoutMenu.style.display = 'block';
+    }
   }
+});
+</script>
+<script>fetch('/api/products?category=men', {
+  headers: {
+    Authorization: 'Bearer ' + localStorage.getItem('token')
+  }
+})
+.then(res => {
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = "login.html";
+    return;
+  }
+  return res.json();
 });
 </script>
 	<div class="colorlib-loader"></div>
