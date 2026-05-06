@@ -12,56 +12,64 @@ async function login(req, res) {
     if (!email || !password)
       return res.status(400).json({ message: 'Email and password required' });
 
-    const users = getUsers();
-    const user = users.find(u => u.email === email);
+    db.get(
+      `SELECT * FROM users WHERE email = ?`,
+      [email],
+      async (err, user) => {
 
-    if (!user)
-      return res.status(401).json({ message: 'Invalid credentials' });
+        if (err)
+          return res.status(500).json({ message: 'DB error' });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: 'Invalid credentials' });
+        if (!user)
+          return res.status(401).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '1h' }
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch)
+          return res.status(401).json({ message: 'Invalid credentials' });
+
+        const token = jwt.sign(
+          { id: user.id, email: user.email },
+          JWT_SECRET,
+          { expiresIn: '1h' }
+        );
+
+        res.json({ token });
+      }
     );
 
-    res.json({ token });
-
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 }
-
 // REGISTER
 async function register(req, res) {
   try {
-    const { email, password } = req.body;
+    const { email, password, firstName } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password required' });
-
-    const users = getUsers();
-
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser)
-      return res.status(400).json({ message: 'User already exists' });
+    if (!email || !password || !firstName)
+      return res.status(400).json({ message: 'All fields required' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
-      id: Date.now(),
-      email,
-      password: hashedPassword
-    };
+    db.run(
+      `INSERT INTO users (firstName, email, password, registeredAt)
+       VALUES (?, ?, ?, ?)`,
+      [firstName, email, hashedPassword, new Date().toISOString()],
+      function (err) {
 
-    addUser(newUser);
+        if (err) {
+          return res.status(400).json({ message: 'User already exists' });
+        }
 
-    res.json({ message: 'User created' });
+        res.json({
+          message: 'User created',
+          userId: this.lastID
+        });
+      }
+    );
 
-  } catch (err) {
+  } catch {
     res.status(500).json({ message: 'Server error' });
   }
 }

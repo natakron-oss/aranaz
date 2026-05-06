@@ -66,6 +66,7 @@
   <!-- REGISTER -->
   <div id="registerForm" style="display:none;">
     <h2>Register</h2>
+    <input type="text" id="registerName" placeholder="First Name">
     <input type="email" id="registerEmail" placeholder="Email">
     <input type="password" id="registerPassword" placeholder="Password">
     <input type="password" id="confirmPassword" placeholder="Confirm Password">
@@ -138,6 +139,7 @@ function login() {
 
 // REGISTER
 function register() {
+  const firstName = document.getElementById('registerName').value;
   const email = document.getElementById('registerEmail').value;
   const password = document.getElementById('registerPassword').value;
   const confirm = document.getElementById('confirmPassword').value;
@@ -153,7 +155,7 @@ function register() {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ firstName, email, password })
   })
   .then(res => res.json())
   .then(data => {
