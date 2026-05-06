@@ -75,5 +75,10 @@
     "password": "$2b$10$gwgHrAneaOwy106PsZb62eJbEHHWZIiLe1gQGl1cYAY35qQgWcMNm",
     "firstName": "Test",
     "registeredAt": "2026-05-04"
+  },
+  {
+    "id": 1778036826724,
+    "email": "kam@gmail.com",
+    "password": "$2b$10$TPh0XTvCS4.Dvg8TvACHxukLs5k1NU0NFNwa8JPRD776ciciUqxAm"
   }
 ]

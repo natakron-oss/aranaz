@@ -4,66 +4,66 @@ const { getUsers, addUser } = require('../models/userModel');
 
 const JWT_SECRET = 'secret123';
 
+// LOGIN
 async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password required' });
 
     const users = getUsers();
     const user = users.find(u => u.email === email);
 
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+    if (!user)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Unauthorized' });
+    if (!isMatch)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    res.status(200).json({ token });
+    res.json({ token });
+
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 }
 
+// REGISTER
 async function register(req, res) {
-  const email = document.getElementById('registerEmail').value;
-  const password = document.getElementById('registerPassword').value;
-  const confirm = document.getElementById('confirmPassword').value;
+  try {
+    const { email, password } = req.body;
 
-  if (password !== confirm) {
-    document.getElementById('result').innerText = "Passwords do not match";
-    return;
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password required' });
+
+    const users = getUsers();
+
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser)
+      return res.status(400).json({ message: 'User already exists' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = {
+      id: Date.now(),
+      email,
+      password: hashedPassword
+    };
+
+    addUser(newUser);
+
+    res.json({ message: 'User created' });
+
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
-
-  fetch('/api/register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.token) {
-      // ✅ register เสร็จ → login อัตโนมัติ
-      localStorage.setItem('token', data.token);
-
-      document.getElementById('result').style.color = "green";
-      document.getElementById('result').innerText = "Register success!";
-
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1000);
-
-    } else {
-      document.getElementById('result').innerText = data.message || "Register failed";
-    }
-  })
-  .catch(() => {
-    document.getElementById('result').innerText = "Server error";
-  });
 }
-
 
 module.exports = { login, register };

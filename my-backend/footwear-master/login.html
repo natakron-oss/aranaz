@@ -24,21 +24,12 @@
       text-align: center;
     }
 
-    h2 {
-      margin-bottom: 20px;
-    }
-
     input {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 5px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #6e8efb;
     }
 
     button {
@@ -48,13 +39,8 @@
       background: #6e8efb;
       border: none;
       color: white;
-      font-size: 16px;
       border-radius: 5px;
       cursor: pointer;
-    }
-
-    button:hover {
-      background: #5a7cf0;
     }
 
     #result {
@@ -64,24 +50,46 @@
     }
   </style>
 </head>
+
 <body>
 
-<!-- LOGIN FORM -->
-<div id="loginForm">
-  <input type="email" id="loginEmail" placeholder="Email">
-  <input type="password" id="loginPassword" placeholder="Password">
-  <button onclick="login()">Login</button>
-</div>
+<div class="login-box">
 
-<!-- REGISTER FORM -->
-<div id="registerForm" style="display:none;">
-  <input type="email" id="registerEmail" placeholder="Email">
-  <input type="password" id="registerPassword" placeholder="Password">
-  <input type="password" id="confirmPassword" placeholder="Confirm Password">
-  <button onclick="register()">Register</button>
+  <!-- LOGIN -->
+  <div id="loginForm">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="registerForm" style="display:none;">
+    <h2>Register</h2>
+    <input type="email" id="registerEmail" placeholder="Email">
+    <input type="password" id="registerPassword" placeholder="Password">
+    <input type="password" id="confirmPassword" placeholder="Confirm Password">
+    <button onclick="register()">Register</button>
+  </div>
+
+  <!-- ✅ สำคัญมาก -->
+  <div id="result"></div>
+
+  <br>
+  <a href="#" onclick="showRegister()">Register</a> |
+  <a href="#" onclick="showLogin()">Login</a>
+
 </div>
 
 <script>
+
+// 🔒 ถ้ามี token แล้ว → ไปหน้า index
+const token = localStorage.getItem('token');
+if (token) {
+  window.location.href = "/index.html";
+}
+
+// toggle
 function showLogin() {
   document.getElementById('loginForm').style.display = 'block';
   document.getElementById('registerForm').style.display = 'none';
@@ -92,10 +100,11 @@ function showRegister() {
   document.getElementById('registerForm').style.display = 'block';
 }
 
-// LOGIN (แก้ id ให้ตรง)
+// ✅ LOGIN (แก้แล้ว)
 function login() {
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
+  const result = document.getElementById('result');
 
   fetch('/api/login', {
     method: 'POST',
@@ -106,19 +115,24 @@ function login() {
   })
   .then(res => res.json())
   .then(data => {
+    console.log("LOGIN RESPONSE:", data);
+
     if (data.token) {
       localStorage.setItem('token', data.token);
-      document.getElementById('result').style.color = "green";
-      document.getElementById('result').innerText = "Login success!";
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1000);
+
+      result.style.color = "green";
+      result.innerText = "Login success!";
+
+      // 🔥 redirect ทันที
+      window.location.href = "/index.html";
+
     } else {
-      document.getElementById('result').innerText = "Login failed";
+      result.style.color = "red";
+      result.innerText = data.message || "Login failed";
     }
   })
   .catch(() => {
-    document.getElementById('result').innerText = "Server error";
+    result.innerText = "Server error";
   });
 }
 
@@ -127,9 +141,10 @@ function register() {
   const email = document.getElementById('registerEmail').value;
   const password = document.getElementById('registerPassword').value;
   const confirm = document.getElementById('confirmPassword').value;
+  const result = document.getElementById('result');
 
   if (password !== confirm) {
-    document.getElementById('result').innerText = "Passwords do not match";
+    result.innerText = "Passwords do not match";
     return;
   }
 
@@ -143,17 +158,16 @@ function register() {
   .then(res => res.json())
   .then(data => {
     if (data.message === "User created") {
-      document.getElementById('result').style.color = "green";
-      document.getElementById('result').innerText = "Register success! Please login.";
+      result.style.color = "green";
+      result.innerText = "Register success! Please login.";
+
       showLogin();
     } else {
-      document.getElementById('result').innerText = data.message || "Register failed";
+      result.innerText = data.message;
     }
-  })
-  .catch(() => {
-    document.getElementById('result').innerText = "Server error";
   });
 }
+
 </script>
 
 </body>

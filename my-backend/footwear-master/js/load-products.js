@@ -407,7 +407,41 @@
   localStorage.setItem('cart', JSON.stringify(cart));
   alert('Added to cart!');
 });
-window.loadCategory = function(category) {
-  requestProducts(`/api/products?category=${category}`, '#product-container');
-};
+function loadCategory(category) {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    alert("Please login first");
+    window.location.href = "login.html";
+    return;
+  }
+
+  fetch(`/api/products?category=${category}`, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  })
+  .then(res => {
+    if (res.status === 401) {
+      alert("Session expired, login again");
+      localStorage.removeItem('token');
+      window.location.href = "login.html";
+      return;
+    }
+    return res.json();
+  })
+  .then(data => {
+    const container = document.getElementById('product-container');
+    container.innerHTML = '';
+
+    data.forEach(p => {
+      container.innerHTML += `
+        <div>
+          <h3>${p.name}</h3>
+          <p>${p.price}</p>
+        </div>
+      `;
+    });
+  });
+}
 })();
