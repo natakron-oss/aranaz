@@ -1,77 +1,131 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { getUsers, addUser } = require('../models/userModel');
+
+const {
+  addUser,
+  findUserByEmail
+} = require('../models/userModel');
 
 const JWT_SECRET = 'secret123';
 
 // LOGIN
 async function login(req, res) {
+
   try {
+
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password required' });
+    if (!email || !password) {
 
-    db.get(
-      `SELECT * FROM users WHERE email = ?`,
-      [email],
-      async (err, user) => {
+      return res.status(400).json({
+        message: 'Email and password required'
+      });
+    }
 
-        if (err)
-          return res.status(500).json({ message: 'DB error' });
+    const user =
+      findUserByEmail(email);
 
-        if (!user)
-          return res.status(401).json({ message: 'Invalid credentials' });
+    if (!user) {
 
-        const isMatch = await bcrypt.compare(password, user.password);
+      return res.status(401).json({
+        message: 'Invalid credentials'
+      });
+    }
 
-        if (!isMatch)
-          return res.status(401).json({ message: 'Invalid credentials' });
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
-        const token = jwt.sign(
-          { id: user.id, email: user.email },
-          JWT_SECRET,
-          { expiresIn: '1h' }
-        );
+    if (!isMatch) {
 
-        res.json({ token });
+      return res.status(401).json({
+        message: 'Invalid credentials'
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email
+      },
+      JWT_SECRET,
+      {
+        expiresIn: '1h'
       }
     );
 
-  } catch {
-    res.status(500).json({ message: 'Server error' });
+    res.json({ token });
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 }
+
 // REGISTER
 async function register(req, res) {
+
   try {
-    const { email, password, firstName } = req.body;
 
-    if (!email || !password || !firstName)
-      return res.status(400).json({ message: 'All fields required' });
+    const {
+      email,
+      password,
+      firstName
+    } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (
+      !email ||
+      !password ||
+      !firstName
+    ) {
 
-    db.run(
-      `INSERT INTO users (firstName, email, password, registeredAt)
-       VALUES (?, ?, ?, ?)`,
-      [firstName, email, hashedPassword, new Date().toISOString()],
-      function (err) {
+      return res.status(400).json({
+        message: 'All fields required'
+      });
+    }
 
-        if (err) {
-          return res.status(400).json({ message: 'User already exists' });
-        }
+    const existingUser =
+      findUserByEmail(email);
 
-        res.json({
-          message: 'User created',
-          userId: this.lastID
-        });
-      }
-    );
+    if (existingUser) {
 
-  } catch {
-    res.status(500).json({ message: 'Server error' });
+      return res.status(400).json({
+        message: 'User already exists'
+      });
+    }
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+    const newUser = {
+      id: Date.now(),
+      firstName,
+      email,
+      password: hashedPassword,
+      registeredAt:
+        new Date().toISOString()
+    };
+
+    addUser(newUser);
+
+    res.json({
+      message: 'User created',
+      userId: newUser.id
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: 'Server error'
+    });
   }
 }
 
-module.exports = { login, register };
+module.exports = {
+  login,
+  register
+};
